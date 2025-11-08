@@ -2,9 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 body {
-  font-family: "Inter", sans-serif;
-  background: #f8fafc;
+  @apply bg-gradient-to-br from-indigo-50 via-white to-blue-50 text-gray-800;
+  font-family: 'Poppins', sans-serif;
 }
 
+/* Glass Panels */
+.card {
+  @apply bg-white/80 backdrop-blur-lg rounded-3xl shadow-soft p-8 transition-all duration-300;
+}
+
+.card:hover {
+  @apply shadow-medium scale-[1.01];
+}
+
+/* Inputs */
+.input {
+  @apply w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300;
+}
+
+/* Buttons */
+.btn {
+  @apply font-semibold rounded-lg px-5 py-2.5 transition-all duration-300 shadow-sm;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-primary-dark hover:shadow-md;
+}
+
+.btn-secondary {
+  @apply bg-accent-pink text-white hover:bg-pink-600 hover:shadow-md;
+}
+
+.btn-success {
+  @apply bg-accent-green text-white hover:bg-green-600 hover:shadow-md;
+}
+
+/* Headings */
+.heading {
+  @apply text-4xl font-bold text-primary mb-3 tracking-tight;
+}
+
+.subheading {
+  @apply text-gray-600 text-lg mb-6;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Navbar */
+.navbar {
+  @apply bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-500;
+}
+
+.navbar-scrolled {
+  @apply bg-white shadow-md;
+}
+
+/* Footer */
+.footer {
+  @apply bg-white/80 backdrop-blur-md py-4 border-t border-gray-100 text-center text-gray-500 text-sm;
+}
+
+/* Custom Shadows (extend in tailwind.config.js) */
+.shadow-soft {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.shadow-medium {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
+  .card {
+    @apply p-6;
+  }
+
+  .heading {
+    @apply text-3xl;
+  }
+
+  .subheading {
+    @apply text-base;
+  }
+
+  .btn {
+    @apply px-4 py-2 text-sm;
+  }
+}

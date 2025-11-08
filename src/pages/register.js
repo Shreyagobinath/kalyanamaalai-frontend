@@ -1,22 +1,37 @@
 import React, { useState } from "react";
 import API from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
-const Register = () => {
+const Signup = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+
+  const registerMutation = useMutation({
+    mutationFn: async ({ name, email, password }) => {
+      const res = await API.post("/auth/register", { name, email, password });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      alert(data.message || "Signup successful! Please log in.");
+      navigate("/userlogin");
+    },
+    onError: (err) => {
+      alert(err.response?.data?.message || "Signup failed");
+    },
+  });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
@@ -24,29 +39,19 @@ const Register = () => {
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await API.post("/auth/register", {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-      });
-
-      alert(res.data.message || "Registration successful!");
-      navigate("/login");
-    } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
-    }
+    registerMutation.mutate({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+    });
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center text-emerald-600 mb-6">
-          Create an Account
-        </h2>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-emerald-50 to-green-100">
+      <div className="glass-card max-w-md w-full fade-in">
+        <h2 className="heading text-center text-emerald-600">Create Your Account</h2>
+        <p className="subheading text-center">Join our trusted community</p>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-gray-600 mb-2">Full Name</label>
@@ -102,25 +107,22 @@ const Register = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={registerMutation.isPending}
             className="w-full bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition"
           >
-            {loading ? "Registering..." : "Register"}
+            {registerMutation.isPending ? "Registering..." : "Register"}
           </button>
         </form>
 
         <p className="text-center text-gray-600 mt-4">
           Already have an account?{" "}
-          <span
-            className="text-emerald-600 cursor-pointer font-semibold hover:underline"
-            onClick={() => navigate("/login")}
-          >
+          <Link to="/userlogin" className="text-emerald-600 font-semibold hover:underline">
             Login here
-          </span>
+          </Link>
         </p>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default Signup;

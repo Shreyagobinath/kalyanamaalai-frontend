@@ -1,38 +1,87 @@
-.App {
-  text-align: center;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ====== Font & Base ====== */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+body {
+  @apply font-[Poppins] bg-gradient-to-br from-indigo-50 via-white to-blue-50 text-gray-800;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* ====== Navbar Styling ====== */
+.navbar {
+  @apply w-full bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50 transition-all duration-500;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+.navbar-scrolled {
+  @apply bg-white shadow-md border-gray-200;
+}
+
+/* Brand Logo */
+.navbar-brand {
+  @apply text-2xl font-extrabold tracking-tight bg-clip-text text-transparent 
+  bg-gradient-to-r from-indigo-600 to-pink-500 hover:opacity-90 transition duration-300;
+}
+
+/* Links */
+.nav-link {
+  @apply text-gray-700 font-medium relative transition duration-300;
+}
+
+.nav-link:hover {
+  @apply text-indigo-600;
+}
+
+.nav-link::after {
+  content: "";
+  @apply absolute left-0 bottom-[-3px] w-0 h-[2px] bg-indigo-500 transition-all duration-300;
+}
+
+.nav-link:hover::after {
+  @apply w-full;
+}
+
+/* Buttons */
+.nav-btn {
+  @apply px-4 py-1.5 rounded-lg font-semibold text-white transition-all duration-300;
+}
+
+.nav-btn-user {
+  @apply bg-indigo-600 hover:bg-indigo-700 shadow-md;
+}
+
+.nav-btn-admin {
+  @apply bg-pink-600 hover:bg-pink-700 shadow-md;
+}
+
+/* Responsive Behavior */
+@media (max-width: 768px) {
+  .nav-links {
+    @apply hidden flex-col items-center w-full space-y-4 mt-4;
   }
-}
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+  .nav-links.active {
+    @apply flex;
   }
-  to {
-    transform: rotate(360deg);
+
+  .menu-toggle {
+    @apply flex flex-col justify-center items-center w-10 h-10 cursor-pointer;
+  }
+
+  .menu-bar {
+    @apply w-6 h-[2px] bg-gray-700 rounded mb-1 transition-all duration-300;
+  }
+
+  .menu-bar.open:nth-child(1) {
+    transform: rotate(45deg) translateY(6px);
+  }
+
+  .menu-bar.open:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-bar.open:nth-child(3) {
+    transform: rotate(-45deg) translateY(-6px);
   }
 }

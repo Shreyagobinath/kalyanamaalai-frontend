@@ -1,15 +1,9 @@
+// src/api/axios.js
 import axios from "axios";
 
+// Create a reusable axios instance
 const API = axios.create({
-    baseURL: "http://localhost:5000/api",
+  baseURL: process.env.REACT_APP_API_URL,
 });
 
-API.interceptors.request.use((req)=>{
-    const token = localStorage.getItem("token");
-    if(token){
-        req.headers.Authorization = `Bearer ${token}`;
-    }
-    return req;
-});
-
-export default API;
+export default API; // ✅ Make sure to export default

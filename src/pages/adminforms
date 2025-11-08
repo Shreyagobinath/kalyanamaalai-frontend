@@ -1,0 +1,93 @@
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import API from "../api/axios";
+
+const fetchForms = async () => {
+  const token = localStorage.getItem("token");
+  const response = await API.get("/admin/forms", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+const approveForm = async (id) => {
+  const token = localStorage.getItem("token");
+  const response = await API.put(
+    `/admin/forms/${id}`,
+    { status: "approved" },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+const AdminForms = () => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["adminForms"],
+    queryFn: fetchForms,
+  });
+
+  const mutation = useMutation({
+    mutationFn: approveForm,
+    onSuccess: () => {
+      alert("Form approved successfully!");
+      queryClient.invalidateQueries(["adminForms"]); // refresh table after approval
+    },
+  });
+
+  if (isLoading)
+    return <p className="text-center mt-10">Loading submissions...</p>;
+
+  return (
+    <div className="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+      <h1 className="text-2xl font-bold text-center mb-6 text-indigo-600">
+        Pending Matrimonial Forms
+      </h1>
+
+      <table className="w-full border-collapse border border-gray-300">
+        <thead className="bg-indigo-100">
+          <tr>
+            <th className="border p-2">Name</th>
+            <th className="border p-2">Email</th>
+            <th className="border p-2">Gender</th>
+            <th className="border p-2">Status</th>
+            <th className="border p-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data?.map((form) => (
+            <tr key={form._id}>
+              <td className="border p-2">{form.name}</td>
+              <td className="border p-2">{form.email}</td>
+              <td className="border p-2">{form.gender}</td>
+              <td className="border p-2">{form.status}</td>
+              <td className="border p-2 text-center">
+                {form.status === "pending" ? (
+                  <button
+                    onClick={() => mutation.mutate(form._id)}
+                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    Approve
+                  </button>
+                ) : (
+                  <span className="text-green-600 font-semibold">
+                    Approved
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default AdminForms;
