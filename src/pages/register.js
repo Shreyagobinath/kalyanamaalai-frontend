@@ -1,128 +1,97 @@
+// src/pages/register.js
 import React, { useState } from "react";
 import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
 
-const Signup = () => {
+const Register = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const navigate = useNavigate();
-
-  const registerMutation = useMutation({
-    mutationFn: async ({ name, email, password }) => {
-      const res = await API.post("/auth/register", { name, email, password });
-      return res.data;
-    },
-    onSuccess: (data) => {
-      alert(data.message || "Signup successful! Please log in.");
-      navigate("/userlogin");
-    },
-    onError: (err) => {
-      alert(err.response?.data?.message || "Signup failed");
-    },
-  });
-
+  // Handle input change
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+    try {
+      await API.post("/auth/register", form); // res is not needed
+      alert("Registration successful! Please login.");
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
-
-    registerMutation.mutate({
-      name: form.name,
-      email: form.email,
-      password: form.password,
-    });
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-emerald-50 to-green-100">
-      <div className="glass-card max-w-md w-full fade-in">
-        <h2 className="heading text-center text-emerald-600">Create Your Account</h2>
-        <p className="subheading text-center">Join our trusted community</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-600 mb-2">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Enter your name"
-              value={form.name}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-600 mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-600 mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-600 mb-2">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={registerMutation.isPending}
-            className="w-full bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          >
-            {registerMutation.isPending ? "Registering..." : "Register"}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-4">
-          Already have an account?{" "}
-          <Link to="/userlogin" className="text-emerald-600 font-semibold hover:underline">
-            Login here
-          </Link>
-        </p>
-      </div>
+    <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded-lg shadow-lg">
+      <h1 className="text-2xl font-bold mb-4 text-center text-indigo-600">
+        Register
+      </h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block mb-1 font-medium">Name</label>
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+        </div>
+        <div>
+          <label className="block mb-1 font-medium">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+        </div>
+        <div>
+          <label className="block mb-1 font-medium">Password</label>
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
+        >
+          {loading ? "Registering..." : "Register"}
+        </button>
+      </form>
+      <p className="mt-4 text-center">
+        Already have an account?{" "}
+        <Link to="/login" className="text-indigo-600 hover:underline">
+          Login
+        </Link>
+      </p>
     </div>
   );
 };
 
-export default Signup;
+export default Register;

@@ -1,108 +1,89 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import {jwtDecode} from "jwt-decode";
-import API from "../api/axios";
-import Navbar from "../components/layouts/navbar";
-import Footer from "../components/layouts/footer";
-
-const fetchAdminData = async () => {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("No token found");
-
-  const decoded = jwtDecode(token);
-  if (decoded.role !== "admin") throw new Error("Unauthorized access");
-
-  const res = await API.get("/admin/users", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data;
-};
+// src/pages/AdminDashboard.js
+import React, { useState } from "react";
+import { FaUsers, FaClipboardList, FaHome } from "react-icons/fa";
+import AdminForms from "./adminforms"; // Pending forms page
+import AllUsers from "./allusers"; // You can create this component to list all users
+//import Profile from "./profile"; // Optional profile component
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
-
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["admin-dashboard"],
-    queryFn: fetchAdminData,
-    retry: false,
-    onError: (err) => {
-      alert(err.message);
-      localStorage.removeItem("token");
-      navigate("/adminlogin");
-    },
-  });
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/adminlogin");
-  };
-
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-screen text-xl text-pink-600 font-semibold">
-        Loading Admin Dashboard...
-      </div>
-    );
-
-  if (isError)
-    return (
-      <div className="flex justify-center items-center h-screen text-red-600 font-semibold">
-        {error.message || "Failed to load admin data"}
-      </div>
-    );
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-pink-50">
-      <Navbar userType="admin" onLogout={handleLogout} />
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className="w-64 bg-indigo-600 text-white flex flex-col">
+        <div className="text-2xl font-bold p-6 border-b border-indigo-500">
+          Admin Panel
+        </div>
 
-      <main className="flex-grow p-6">
-        <div className="max-w-6xl mx-auto bg-white/80 backdrop-blur-md shadow-lg rounded-3xl p-8">
-          <h2 className="text-3xl font-bold text-pink-700 mb-4">
-            Admin Dashboard 👩‍💻
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Manage users, monitor activity, and keep the community safe.
-          </p>
+        <nav className="flex-1 px-2 py-4 space-y-2">
+          <button
+            className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
+              activeTab === "dashboard" ? "bg-indigo-500" : ""
+            }`}
+            onClick={() => setActiveTab("dashboard")}
+          >
+            <FaHome /> Dashboard
+          </button>
+          <button
+            className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
+              activeTab === "pendingUsers" ? "bg-indigo-500" : ""
+            }`}
+            onClick={() => setActiveTab("pendingUsers")}
+          >
+            <FaClipboardList /> Pending Forms
+          </button>
+           <button
+            className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
+              activeTab === "pendingConnections" ? "bg-indigo-500" : ""
+            }`}
+            onClick={() => setActiveTab("pendingConnections")}
+          >
+            <FaClipboardList /> Pending Connections
+          </button>
+          <button
+            className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
+              activeTab === "allUsers" ? "bg-indigo-500" : ""
+            }`}
+            onClick={() => setActiveTab("allUsers")}
+          >
+            <FaUsers /> All Users
+          </button>
+        </nav>
+      </div>
 
-          {/* Admin User Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse bg-white shadow rounded-lg">
-              <thead className="bg-pink-100 text-pink-700 text-sm">
-                <tr>
-                  <th className="py-3 px-4 text-left">Name</th>
-                  <th className="py-3 px-4 text-left">Email</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data?.users?.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-pink-50 transition border-b"
-                  >
-                    <td className="py-3 px-4">{user.name}</td>
-                    <td className="py-3 px-4">{user.email}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          user.isActive
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {user.isActive ? "Active" : "Pending"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top bar */}
+        <div className="flex justify-end items-center p-4 bg-white shadow-md border-b">
+          <div className="relative">
+            <img
+              src="https://i.pravatar.cc/40"
+              alt="Profile"
+              className="w-10 h-10 rounded-full cursor-pointer"
+            />
+            {/* Optional dropdown menu */}
+            {/* <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded">
+              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">Profile</button>
+              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">Logout</button>
+            </div> */}
           </div>
         </div>
-      </main>
 
-      <Footer />
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6">
+          {activeTab === "dashboard" && (
+            <div>
+              <h1 className="text-3xl font-bold mb-4 text-indigo-600">
+                Welcome, Admin
+              </h1>
+              <p>Select a menu option to manage users and forms.</p>
+            </div>
+          )}
+          {activeTab === "pendingUsers" && <AdminForms />}
+          {activeTab === "allUsers" && <AllUsers />}
+        </div>
+      </div>
     </div>
   );
 };
