@@ -1,12 +1,41 @@
 // src/pages/AdminDashboard.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaUsers, FaClipboardList, FaHome } from "react-icons/fa";
-import AdminForms from "./adminforms"; // Pending forms page
-import AllUsers from "./allusers"; // You can create this component to list all users
-//import Profile from "./profile"; // Optional profile component
+import AdminForms from "./adminforms";
+import AllUsers from "./allusers";
+import PendingConnections from "./pendingconnections";
+import API from "../api/axios";
 
 const AdminDashboard = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Fetch recent notifications
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.get("/admin/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications(res.data || []);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login"; // redirect to login
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -33,13 +62,13 @@ const AdminDashboard = () => {
           >
             <FaClipboardList /> Pending Forms
           </button>
-           <button
+          <button
             className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
               activeTab === "pendingConnections" ? "bg-indigo-500" : ""
             }`}
             onClick={() => setActiveTab("pendingConnections")}
           >
-            <FaClipboardList /> Pending Connections
+            <FaUsers /> Pending Connections
           </button>
           <button
             className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
@@ -55,18 +84,39 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top bar */}
-        <div className="flex justify-end items-center p-4 bg-white shadow-md border-b">
+        <div className="flex justify-end items-center p-4 bg-white shadow-md border-b relative">
+          {/* Profile photo */}
           <div className="relative">
             <img
               src="https://i.pravatar.cc/40"
               alt="Profile"
-              className="w-10 h-10 rounded-full cursor-pointer"
+              className="w-10 h-10 rounded-full cursor-pointer border-2 border-indigo-500"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
             />
-            {/* Optional dropdown menu */}
-            {/* <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded">
-              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">Profile</button>
-              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">Logout</button>
-            </div> */}
+
+            {/* Dropdown menu */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md border border-gray-200 z-50">
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => alert("Profile clicked")}
+                >
+                  Profile
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => alert("Account details clicked")}
+                >
+                  Account Details
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -77,11 +127,32 @@ const AdminDashboard = () => {
               <h1 className="text-3xl font-bold mb-4 text-indigo-600">
                 Welcome, Admin
               </h1>
-              <p>Select a menu option to manage users and forms.</p>
+
+              <h2 className="text-2xl font-semibold mb-3">Recent Notifications</h2>
+              {loading ? (
+                <p className="text-gray-500">Loading notifications...</p>
+              ) : notifications.length > 0 ? (
+                <ul className="space-y-2">
+                  {notifications.map((notif, index) => (
+                    <li
+                      key={index}
+                      className="bg-gray-100 p-3 rounded-md border-l-4 border-indigo-500"
+                    >
+                      <p className="text-gray-800">{notif.message}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(notif.created_at).toLocaleString()}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 italic">No recent notifications</p>
+              )}
             </div>
           )}
           {activeTab === "pendingUsers" && <AdminForms />}
           {activeTab === "allUsers" && <AllUsers />}
+          {activeTab === "pendingConnections" && <PendingConnections />}
         </div>
       </div>
     </div>

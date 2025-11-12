@@ -1,12 +1,11 @@
+// src/pages/UserDashboard.js
 import React, { useState } from "react";
 import {
   LayoutDashboard,
   FileText,
   Heart,
   Edit3,
-  User,
   LogOut,
-  Trash2,
   Bell,
 } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
@@ -22,12 +21,6 @@ const fetchNotifications = async () => {
 // 🔹 Fetch approved users
 const fetchApprovedUsers = async () => {
   const res = await API.get("/user/approved");
-  return res.data;
-};
-
-// 🔹 Send connection request
-const sendConnectionRequest = async (receiverId) => {
-  const res = await API.post("/user/connect", { receiverId });
   return res.data;
 };
 
@@ -87,8 +80,8 @@ const UserDashboard = () => {
     setNotifOpen(newState);
     setDropdownOpen(false);
 
-    // Mark all unread notifications as read only when opening
-    if (newState && notifications.some((n) => !Number(n.read))) {
+    // Mark unread notifications as read only when opening
+    if (newState && notifications.some((n) => !Number(n.is_read))) {
       try {
         await markReadMutation.mutateAsync();
       } catch (err) {
@@ -98,7 +91,7 @@ const UserDashboard = () => {
   };
 
   // ✅ Unread count for red badge
-  const unreadCount = notifications.filter((n) => !Number(n.read)).length;
+  const unreadCount = notifications.filter((n) => !Number(n.is_read)).length;
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -149,16 +142,14 @@ const UserDashboard = () => {
                 )}
               </button>
 
-              {/* Dropdown */}
+              {/* Notification Dropdown */}
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border max-h-80 overflow-y-auto z-50">
                   <div className="p-3 border-b text-gray-800 font-semibold">
                     Notifications
                   </div>
                   {notifications.length === 0 ? (
-                    <p className="p-3 text-gray-500 text-sm">
-                      No new notifications
-                    </p>
+                    <p className="p-3 text-gray-500 text-sm">No new notifications</p>
                   ) : (
                     <ul className="divide-y divide-gray-100">
                       {notifications.map((note, index) => (
@@ -166,9 +157,7 @@ const UserDashboard = () => {
                           key={`${note.id}-${index}`}
                           className="p-3 hover:bg-gray-50"
                         >
-                          <p className="text-gray-700 text-sm">
-                            {note.message}
-                          </p>
+                          <p className="text-gray-700 text-sm">{note.message}</p>
                           <span className="text-xs text-gray-400">
                             {new Date(note.created_at).toLocaleString()}
                           </span>
@@ -180,69 +169,44 @@ const UserDashboard = () => {
               )}
             </div>
 
-            {/* 👤 Profile Dropdown */}
+            {/* 👤 Profile Photo (like Admin Dashboard) */}
             <div className="relative">
-              <button
-                className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition"
+              <img
+                src="https://i.pravatar.cc/40"
+                alt="Profile"
+                className="w-10 h-10 rounded-full cursor-pointer border-2 border-indigo-500"
                 onClick={() => {
                   setDropdownOpen(!dropdownOpen);
                   setNotifOpen(false);
                 }}
-              >
-                <User className="text-gray-600" size={20} />
-                <span className="text-gray-700 font-medium">Profile</span>
-              </button>
+              />
 
+              {/* Profile Dropdown */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border z-50">
-                  <div className="px-4 py-2 text-sm text-gray-500 border-b">
-                    Profile Actions
-                  </div>
-
                   <Link
                     to="/user/form"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
-                    <FileText className="inline-block mr-2" size={16} />
+                    <FileText className="mr-2" size={16} />
                     Fill Form
                   </Link>
 
                   <Link
                     to="/user/edit-profile"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
-                    <Edit3 className="inline-block mr-2" size={16} />
-                    Edit Profile
+                    <Edit3 className="mr-2" size={16} />
+                    Account Details
                   </Link>
 
-                  <hr />
-
-                  <div className="px-4 py-2 text-sm text-gray-500 border-b">
-                    Account
-                  </div>
-
-                  <Link
-                    to="/user/update-profile"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Update Profile
-                  </Link>
-
-                  <button
-                    onClick={() => navigate("/user/delete-profile")}
-                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="inline-block mr-2" size={16} />
-                    Delete Profile
-                  </button>
-
-                  <hr />
+                  <hr className="my-1" />
 
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    className="flex items-center w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
                   >
-                    <LogOut className="inline-block mr-2" size={16} />
+                    <LogOut className="mr-2" size={16} />
                     Logout
                   </button>
                 </div>

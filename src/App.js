@@ -8,6 +8,7 @@ import Home from "./pages/home";
 import UserDashboard from "./pages/userdashboard";
 import AdminDashboard from "./pages/admindashboard"
 import AllUsers from "./pages/allusers";
+import PendingConnections from "./pages/pendingconnections";
 
 // Auth helpers
 const getToken = () => localStorage.getItem("token");
@@ -46,7 +47,12 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/admin/users" element={<AllUsers/>}/>
+      <Route path="/admin/users" element={
+        <ProtectedRoute adminOnly={true}>
+          <AllUsers />
+        </ProtectedRoute>
+      } />
+
       <Route
   path="/admin/dashboard"
   element={
@@ -59,7 +65,7 @@ function App() {
 <Route
   path="/user/dashboard"
   element={
-    <ProtectedRoute userOnly={true}>
+    <ProtectedRoute>
       <UserDashboard />
     </ProtectedRoute>
   }
@@ -81,6 +87,16 @@ function App() {
         element={
           <ProtectedRoute>
             <UserForm />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin Protected Routes */}
+      <Route
+        path="/admin/connections/pending"
+        element={
+          <ProtectedRoute adminOnly={true}>
+            <PendingConnections />
           </ProtectedRoute>
         }
       />

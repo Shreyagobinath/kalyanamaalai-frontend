@@ -7,79 +7,113 @@ const fetchForms = async () => {
   return res.data;
 };
 
-const approveForm =async(id)=>{
-    const res = await API.put(`/admin/forms/approve/${id}`);
-    return res.data;
+const approveForm = async (id) => {
+  const res = await API.put(`/admin/forms/approve/${id}`);
+  return res.data;
 };
 
-const  rejectForm = async (id)=>{
-    const res=await API.put(`/admin/forms/reject/${id}`);
-    return res.data;
-}
+const rejectForm = async (id) => {
+  const res = await API.put(`/admin/forms/reject/${id}`);
+  return res.data;
+};
 
 const AdminForms = () => {
   const queryClient = useQueryClient();
-  const { data, isLoading,error} = useQuery({
-    queryKey:["adminForms"],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["adminForms"],
     queryFn: fetchForms,
   });
 
   const approveMutation = useMutation({
     mutationFn: approveForm,
-    onSuccess: ()=>{
-        queryClient.invalidateQueries({queryKey: ["adminForms"]});
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminForms"] });
     },
-});
+  });
 
- 
   const rejectMutation = useMutation({
     mutationFn: rejectForm,
-    onSuccess: ()=>{
-        queryClient.invalidateQueries({queryKey: ["adminForms"]});
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminForms"] });
     },
-});
+  });
 
-  if (isLoading) return <p className="text-center mt-10">Loading forms...</p>;
-  if(error) return <p>Error fetching forms</p>;
+  if (isLoading)
+    return <p className="text-center mt-10 text-gray-600">Loading forms...</p>;
+  if (error) return <p className="text-center text-red-500">Error fetching forms</p>;
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 p-6 bg-white rounded shadow-lg">
-      <h1 className="text-2xl font-bold text-center mb-6 text-indigo-600">Pending Forms</h1>
-      <table className="w-full border border-gray-300">
-        <thead className="bg-indigo-100">
-          <tr>
-            <th className="border p-2">Name</th>
-            <th className="border p-2">Email</th>
-            <th className="border p-2">Gender</th>
-            <th className="border p-2">Status</th>
-            <th className="border p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((form) => (
-            <tr key={form.id}>
-              <td className="border p-2">{form.full_name_en}</td>
-              <td className="border p-2">{form.email}</td>
-              <td className="border p-2">{form.gender}</td>
-              <td className="border p-2">{form.status}</td>
-              <td className="border p-2 flex gap-2">
-                <button
-                  onClick={() => approveMutation.mutate(form.id)}
-                  className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => rejectMutation.mutate(form.id)}
-                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  Reject
-                </button>
-              </td>
+    <div className="max-w-6xl mx-auto mt-10 bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+      <div className="bg-white text-gray-800 py-4 px-6">
+        <h1 className="text-2xl font-semibold">Pending User Forms</h1>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto text-sm text-gray-700">
+          <thead className="bg-indigo-100 text-indigo-900">
+            <tr>
+              <th className="py-3 px-4 text-left font-medium border-b">No</th>
+              <th className="py-3 px-4 text-left font-medium border-b">Full Name</th>
+              <th className="py-3 px-4 text-left font-medium border-b">Email</th>
+              <th className="py-3 px-4 text-left font-medium border-b">Gender</th>
+              <th className="py-3 px-4 text-center font-medium border-b">Status</th>
+              <th className="py-3 px-4 text-center font-medium border-b">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody className="divide-y divide-gray-200">
+            {data.length > 0 ? (
+              data.map((form, index) => (
+                <tr key={form.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-3 px-4 border-b">{index + 1}</td>
+                  <td className="py-3 px-4 border-b font-medium">{form.full_name_en}</td>
+                  <td className="py-3 px-4 border-b">{form.email}</td>
+                  <td className="py-3 px-4 border-b capitalize">{form.gender}</td>
+                  <td className="py-3 px-4 border-b text-center">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        form.status === "pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : form.status === "approved"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {form.status}
+                    </span>
+                  </td>
+
+                  <td className="py-3 px-4 border-b text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <button
+                        onClick={() => approveMutation.mutate(form.id)}
+                        className="px-4 py-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm shadow-sm transition-colors w-28"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => rejectMutation.mutate(form.id)}
+                        className="px-4 py-0 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm shadow-sm transition-colors w-28"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="py-6 text-center text-gray-500 italic border-b"
+                >
+                  No pending forms found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
