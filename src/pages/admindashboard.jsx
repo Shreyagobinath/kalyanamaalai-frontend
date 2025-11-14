@@ -5,6 +5,7 @@ import AdminForms from "./adminforms";
 import AllUsers from "./allusers";
 import PendingConnections from "./pendingconnections";
 import API from "../api/axios";
+import { Loader2 } from "lucide-react";
 
 const AdminDashboard = () => {
   const [notifications, setNotifications] = useState([]);
@@ -12,7 +13,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch recent notifications
+  // Fetch recent user submissions (was notifications before)
   const fetchNotifications = async () => {
     setLoading(true);
     try {
@@ -128,25 +129,52 @@ const AdminDashboard = () => {
                 Welcome, Admin
               </h1>
 
-              <h2 className="text-2xl font-semibold mb-3">Recent Notifications</h2>
+              <h2 className="text-2xl font-semibold mb-5">
+                Recent User Form Requests
+              </h2>
+
               {loading ? (
-                <p className="text-gray-500">Loading notifications...</p>
+                <div className="flex justify-center items-center h-40">
+                  <Loader2 className="animate-spin text-gray-500" size={32} />
+                </div>
               ) : notifications.length > 0 ? (
-                <ul className="space-y-2">
-                  {notifications.map((notif, index) => (
-                    <li
-                      key={index}
-                      className="bg-gray-100 p-3 rounded-md border-l-4 border-indigo-500"
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {notifications.map((note, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl p-5 border border-gray-200"
                     >
-                      <p className="text-gray-800">{notif.message}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(notif.created_at).toLocaleString()}
-                      </p>
-                    </li>
+                      <div className="flex flex-col space-y-2">
+                        <h2 className="font-semibold text-gray-900 text-lg">
+                          {note.title || "User Form Request"}
+                        </h2>
+                        <p
+                          className={`text-sm font-medium ${
+                            note.message?.includes("approved")
+                              ? "text-green-600"
+                              : note.message?.includes("rejected")
+                              ? "text-red-600"
+                              : "text-yellow-600"
+                          }`}
+                        >
+                          {note.message || "Status: pending"}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {note.email || "No email available"}
+                        </p>
+                        <p className="text-xs text-gray-400 italic">
+                          {note.date
+                            ? new Date(note.date).toLocaleString()
+                            : "No date"}
+                        </p>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
-                <p className="text-gray-500 italic">No recent notifications</p>
+                <p className="text-gray-500 italic text-center mt-10">
+                  No recent user form requests found.
+                </p>
               )}
             </div>
           )}

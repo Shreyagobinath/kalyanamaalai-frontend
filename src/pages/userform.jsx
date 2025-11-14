@@ -1,32 +1,87 @@
 // src/pages/UserForm.js
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSubmitForm } from "../hooks/useforms";
 
 const UserForm = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const mutation = useSubmitForm(
-    (data) => {
+    () => {
       alert("Form submitted successfully. Waiting for admin approval.");
       reset();
+      setProfilePhoto(null);
+      setPreview(null);
     },
-    (err) => alert(err)
+    (err) => alert("Error submitting form: " + err.message)
   );
 
   const onSubmit = (data) => {
-    mutation.mutate(data);
+    const formData = new FormData();
+
+    // Append all text fields
+    for (const key in data) {
+      formData.append(key, data[key]);
+    }
+
+    // Append photo if selected
+    if (profilePhoto) {
+      formData.append("profile_photo", profilePhoto);
+    }
+
+    // ✅ Debugging – check what’s inside FormData
+    console.log("FormData contents:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": ", pair[1]);
+    }
+
+    mutation.mutate(formData);
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    setProfilePhoto(file);
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    } else {
+      setPreview(null);
+    }
   };
 
   return (
-    <div className="max-w-5xl mx-auto bg-blue-100 shadow-xl p-8 my-10">
+    <div className="max-w-5xl mx-auto bg-blue-100 shadow-xl p-8 my-10 rounded-lg">
       <h1 className="text-3xl font-bold text-center text-indigo-500 mb-8">
         Matrimonial Profile Application / மணமகன் - மணமகள் விண்ணப்பம் 💍
       </h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {/* Profile Photo Upload */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="w-32 h-32 mb-4 rounded-full overflow-hidden border-2 border-indigo-500">
+          {preview ? (
+            <img
+              src={preview}
+              alt="Profile Preview"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
+              No Photo
+            </div>
+          )}
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
+          className="text-sm"
+        />
+      </div>
 
-        {/* ---------------- Personal Details ---------------- */}
+      {/* Main Form */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        {/* Personal Details */}
         <section>
           <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
             Personal Details / தனிப்பட்ட விவரங்கள்
@@ -72,7 +127,7 @@ const UserForm = () => {
           </div>
         </section>
 
-        {/* ---------------- Education & Occupation ---------------- */}
+        {/* Education & Occupation */}
         <section>
           <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
             Education & Occupation / கல்வி மற்றும் தொழில்
@@ -95,7 +150,7 @@ const UserForm = () => {
           </div>
         </section>
 
-        {/* ---------------- Contact & Family Details ---------------- */}
+        {/* Contact & Family Details */}
         <section>
           <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
             Contact & Family Details / தொடர்பு மற்றும் குடும்ப விவரங்கள்
@@ -108,7 +163,7 @@ const UserForm = () => {
               { name: "father_name_en", label: "Father’s Name/ தந்தையின் பெயர்" },
               { name: "mother_name_en", label: "Mother’s Name/ தாயின் பெயர்" },
               { name: "siblings", label: "Siblings / சகோதரர்கள்" },
-              {name: "location",label:"location/இடம் "},
+              { name: "location", label: "Location / இடம் " },
               { name: "marital_status", label: "Marital Status / திருமண நிலை", type: "select", options: ["Single / திருமணம் ஆகாதவர்", "Divorced / விவாகரத்து", "Widowed / விதவை"] },
             ].map((field) => (
               <div key={field.name}>
@@ -136,7 +191,7 @@ const UserForm = () => {
           </div>
         </section>
 
-        {/* ---------------- Partner Preferences ---------------- */}
+        {/* Partner Preferences */}
         <section>
           <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
             Partner Preference / எதிர்பார்ப்பு விவரங்கள்
@@ -160,7 +215,7 @@ const UserForm = () => {
           </div>
         </section>
 
-        {/* ---------------- Submit Button ---------------- */}
+        {/* Submit Button */}
         <div className="text-center mt-8">
           <button
             type="submit"

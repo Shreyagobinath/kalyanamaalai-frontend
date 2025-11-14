@@ -71,7 +71,7 @@ const AllUsers = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-md font-medium transition ${
+            className={`px-4 py-1 rounded-sm font-medium transition ${
               activeTab === tab
                 ? "bg-indigo-500 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -111,10 +111,10 @@ const AllUsers = () => {
                   <td className="py-3 px-4 border-b text-center">
                     <button
                       onClick={() => handleViewDetails(user)}
-                      className="p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition"
+                      className="p-1 bg-indigo-500 text-white rounded-sm hover:bg-indigo-600 transition"
                       title="View Details"
                     >
-                      <Eye size={18} />
+                      <Eye size={10} />
                     </button>
                   </td>
                 </tr>

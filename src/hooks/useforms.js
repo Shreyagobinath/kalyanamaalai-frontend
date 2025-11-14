@@ -1,22 +1,23 @@
 // src/hooks/useForms.js
 import { useMutation } from "@tanstack/react-query";
-import API from "../api/axios"; // Axios instance with baseURL
+import API from "../api/axios";
 
 export const useSubmitForm = (onSuccess, onError) => {
   return useMutation({
     mutationFn: async (formData) => {
-      // Convert formData to send all fields
-      const dataToSend = { ...formData, status: "Pending" };
+      const token = localStorage.getItem("token");
 
-      // Send POST request to backend (no auth token required)
-      const res = await API.post("/user/forms", dataToSend, {
+      // Post the FormData object directly (do not convert to JSON)
+      const res = await API.post("/user/forms", formData, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
+          Authorization: token ? `Bearer ${token}` : undefined,
         },
       });
 
       return res.data;
     },
+
     onSuccess,
     onError: (error) => {
       const msg = error.response?.data?.message || "Form submission failed";

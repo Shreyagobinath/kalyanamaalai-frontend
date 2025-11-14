@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import API from "../api/axios";
+import { Eye } from "lucide-react"; // 👁 Eye icon
 
 const fetchPendingConnections = async () => {
   const { data } = await API.get("/admin/connections/pending");
@@ -19,8 +20,9 @@ const rejectConnection = async (id) => {
 
 const PendingConnections = () => {
   const queryClient = useQueryClient();
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // ✅ Fetch data using TanStack Query v5 syntax
   const {
     data: connections = [],
     isLoading,
@@ -46,9 +48,21 @@ const PendingConnections = () => {
     },
   });
 
+  const handleViewDetails = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.get(`/admin/forms/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSelectedUser(res.data);
+      setShowModal(true);
+    } catch (err) {
+      console.error("Error fetching user details:", err);
+    }
+  };
+
   if (isLoading)
     return <p className="text-center py-8">Loading pending connections...</p>;
-
   if (isError)
     return (
       <p className="text-red-600 text-center">
@@ -67,14 +81,24 @@ const PendingConnections = () => {
           <thead className="bg-indigo-50 text-gray-700">
             <tr>
               <th className="py-3 px-4 text-left font-medium border-b">No</th>
-              <th className="py-3 px-4 text-left font-medium border-b">Sender Name</th>
-              <th className="py-3 px-4 text-left font-medium border-b">Sender Email</th>
-              <th className="py-3 px-4 text-left font-medium border-b">Sender Gender</th>
-              <th className="py-3 px-4 text-left font-medium border-b">Receiver Name</th>
-              <th className="py-3 px-4 text-left font-medium border-b">Receiver Email</th>
-              <th className="py-3 px-4 text-left font-medium border-b">Receiver Gender</th>
-              <th className="py-3 px-4 text-center font-medium border-b">Status</th>
-              <th className="py-3 px-4 text-center font-medium border-b">Actions</th>
+              <th className="py-3 px-4 text-left font-medium border-b">
+                Sender Name
+              </th>
+              <th className="py-3 px-4 text-left font-medium border-b">
+                Sender Email
+              </th>
+              <th className="py-3 px-4 text-left font-medium border-b">
+                Receiver Name
+              </th>
+              <th className="py-3 px-4 text-left font-medium border-b">
+                Receiver Email
+              </th>
+              <th className="py-3 px-4 text-center font-medium border-b">
+                Status
+              </th>
+              <th className="py-3 px-4 text-center font-medium border-b">
+                Actions
+              </th>
             </tr>
           </thead>
 
@@ -92,23 +116,25 @@ const PendingConnections = () => {
                   className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
                 >
                   <td className="py-3 px-4 border-b">{i + 1}</td>
-                  <td className="py-3 px-4 border-b font-medium text-gray-800">
-                    {conn.sender_name || "—"}
+                  <td className="py-3 px-4 border-b-0 font-medium text-gray-800 flex items-center gap-2">
+                    {/* 👁 Eye button left to name */}
+                    <button
+                      onClick={() => handleViewDetails(conn.sender_id)}
+                      className="p-0  hover:bg-gray-200 text-gray-600 rounded-sm outline-none border-none align-middle"
+                      title="View User Details"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <span>{conn.sender_name || "—"}</span>
                   </td>
                   <td className="py-3 px-4 border-b text-gray-700">
                     {conn.sender_email || "—"}
-                  </td>
-                  <td className="py-3 px-4 border-b text-gray-700 capitalize">
-                    {conn.sender_gender || "—"}
                   </td>
                   <td className="py-3 px-4 border-b font-medium text-gray-800">
                     {conn.receiver_name || "—"}
                   </td>
                   <td className="py-3 px-4 border-b text-gray-700">
                     {conn.receiver_email || "—"}
-                  </td>
-                  <td className="py-3 px-4 border-b text-gray-700 capitalize">
-                    {conn.receiver_gender || "—"}
                   </td>
                   <td className="py-3 px-4 border-b text-center">
                     <span
@@ -122,21 +148,21 @@ const PendingConnections = () => {
                     >
                       {conn.status}
                     </span>
-                  </td>     
+                  </td>
                   <td className="py-3 px-4 border-b text-center space-x-2">
                     <div className="flex flex-col items-center gap-1">
-                    <button
-                      onClick={() => approveMutation.mutate(conn.id)}
-                      className="px-3 py-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm w-28"
-                    >
-                      Approve
-                    </button><br></br>
-                    <button
-                      onClick={() => rejectMutation.mutate(conn.id)}
-                      className="px-3 py-0 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm w-28 "
-                    >
-                      Reject
-                    </button>
+                      <button
+                        onClick={() => approveMutation.mutate(conn.id)}
+                        className="px-3 py-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm w-28"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => rejectMutation.mutate(conn.id)}
+                        className="px-3 py-0 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm w-28"
+                      >
+                        Reject
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -145,6 +171,33 @@ const PendingConnections = () => {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Modal for user details */}
+      {showModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              User Details
+            </h3>
+            <div className="space-y-2 text-sm">
+              {Object.entries(selectedUser).map(([key, value]) => (
+                <p key={key} className="text-gray-700">
+                  <strong className="capitalize">{key.replace(/_/g, " ")}:</strong>{" "}
+                  {value || "—"}
+                </p>
+              ))}
+            </div>
+            <div className="mt-6 text-right">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

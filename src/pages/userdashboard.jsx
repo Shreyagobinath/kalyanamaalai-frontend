@@ -1,16 +1,18 @@
-// src/pages/UserDashboard.js
+// src/pages/UserDashboard.jsx
 import React, { useState } from "react";
 import {
   LayoutDashboard,
   FileText,
   Heart,
-  Edit3,
   LogOut,
   Bell,
+  User as UserIcon, // ✅ Default icon
 } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import API from "../api/axios";
+
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // 🔹 Fetch notifications
 const fetchNotifications = async () => {
@@ -30,9 +32,19 @@ const markReadNotifications = async () => {
   return res.data;
 };
 
+// 🔹 Fetch user profile (for uploaded profile photo)
+const fetchUserProfile = async () => {
+  const token = localStorage.getItem("token");
+  const res = await API.get("/user/account-details", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
 const UserDashboard = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -48,7 +60,23 @@ const UserDashboard = () => {
     queryFn: fetchNotifications,
   });
 
-  // ✅ Mutation to mark notifications as read
+  // ✅ Fetch profile photo from backend
+  useQuery({
+    queryKey: ["userProfile"],
+    queryFn: fetchUserProfile,
+    onSuccess: (data) => {
+      if (data?.profile_photo) {
+        setProfilePhoto(`${BASE_URL}/uploads/profile_photos/${data.profile_photo}`);
+      } else {
+        setProfilePhoto(null); // No photo → use default icon
+      }
+    },
+    onError: () => {
+      setProfilePhoto(null);
+    },
+  });
+
+  // ✅ Mark notifications as read
   const markReadMutation = useMutation({
     mutationFn: markReadNotifications,
     onSuccess: () => {
@@ -56,7 +84,7 @@ const UserDashboard = () => {
     },
   });
 
-  // ✅ Mutation for connection requests
+  // ✅ Send connection request
   const connectionMutation = useMutation({
     mutationFn: (receiverId) => API.post("/user/connect", { receiverId }),
     onSuccess: () => {
@@ -68,19 +96,18 @@ const UserDashboard = () => {
     },
   });
 
-  // ✅ Logout handler
+  // ✅ Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  // ✅ Handle notification dropdown open/close
+  // ✅ Toggle notifications dropdown
   const handleNotifToggle = async () => {
     const newState = !notifOpen;
     setNotifOpen(newState);
     setDropdownOpen(false);
 
-    // Mark unread notifications as read only when opening
     if (newState && notifications.some((n) => !Number(n.is_read))) {
       try {
         await markReadMutation.mutateAsync();
@@ -90,7 +117,6 @@ const UserDashboard = () => {
     }
   };
 
-  // ✅ Unread count for red badge
   const unreadCount = notifications.filter((n) => !Number(n.is_read)).length;
 
   return (
@@ -119,7 +145,7 @@ const UserDashboard = () => {
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Section */}
       <div className="flex-1 ml-64 flex flex-col">
         {/* Top Bar */}
         <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center relative">
@@ -128,7 +154,7 @@ const UserDashboard = () => {
           </h1>
 
           <div className="flex items-center space-x-4 relative">
-            {/* 🔔 Notification Icon */}
+            {/* 🔔 Notifications */}
             <div className="relative">
               <button
                 onClick={handleNotifToggle}
@@ -142,21 +168,19 @@ const UserDashboard = () => {
                 )}
               </button>
 
-              {/* Notification Dropdown */}
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border max-h-80 overflow-y-auto z-50">
                   <div className="p-3 border-b text-gray-800 font-semibold">
                     Notifications
                   </div>
                   {notifications.length === 0 ? (
-                    <p className="p-3 text-gray-500 text-sm">No new notifications</p>
+                    <p className="p-3 text-gray-500 text-sm">
+                      No new notifications
+                    </p>
                   ) : (
                     <ul className="divide-y divide-gray-100">
-                      {notifications.map((note, index) => (
-                        <li
-                          key={`${note.id}-${index}`}
-                          className="p-3 hover:bg-gray-50"
-                        >
+                      {notifications.map((note,idx) => (
+                        <li key={`${note.id}-${idx}`} className="p-3 hover:bg-gray-50">
                           <p className="text-gray-700 text-sm">{note.message}</p>
                           <span className="text-xs text-gray-400">
                             {new Date(note.created_at).toLocaleString()}
@@ -169,19 +193,30 @@ const UserDashboard = () => {
               )}
             </div>
 
-            {/* 👤 Profile Photo (like Admin Dashboard) */}
+            {/* 👤 Profile (Uploaded or Default) */}
             <div className="relative">
-              <img
-                src="https://i.pravatar.cc/40"
-                alt="Profile"
-                className="w-10 h-10 rounded-full cursor-pointer border-2 border-indigo-500"
-                onClick={() => {
-                  setDropdownOpen(!dropdownOpen);
-                  setNotifOpen(false);
-                }}
-              />
+              {profilePhoto ? (
+                <img
+                  src={profilePhoto}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full cursor-pointer border-2 border-indigo-500 object-cover"
+                  onClick={() => {
+                    setDropdownOpen(!dropdownOpen);
+                    setNotifOpen(false);
+                  }}
+                />
+              ) : (
+                <button
+                  onClick={() => {
+                    setDropdownOpen(!dropdownOpen);
+                    setNotifOpen(false);
+                  }}
+                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border-2 border-indigo-500"
+                >
+                  <UserIcon className="text-gray-500" size={22} />
+                </button>
+              )}
 
-              {/* Profile Dropdown */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border z-50">
                   <Link
@@ -190,14 +225,6 @@ const UserDashboard = () => {
                   >
                     <FileText className="mr-2" size={16} />
                     Fill Form
-                  </Link>
-
-                  <Link
-                    to="/user/edit-profile"
-                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    <Edit3 className="mr-2" size={16} />
-                    Account Details
                   </Link>
 
                   <hr className="my-1" />
@@ -215,7 +242,7 @@ const UserDashboard = () => {
           </div>
         </header>
 
-        {/* Main Page Content */}
+        {/* Main Dashboard Content */}
         <main className="flex-1 p-6 overflow-y-auto">
           <h2 className="text-lg font-semibold mb-4">Approved Members</h2>
           {isLoading ? (
@@ -224,10 +251,10 @@ const UserDashboard = () => {
             <p>No approved users available.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {approvedUsers.map((user, index) => (
+              {approvedUsers.map((user,idx) => (
                 <div
-                  key={`${user.id}-${index}`}
-                  className="bg-gradient-to-r from-indigo-300 to-blue-100 shadow p-4 flex flex-col justify-between"
+                  key={`${user.id}-${idx}`}
+                  className="bg-gradient-to-r from-indigo-300 to-blue-100 shadow p-4 flex flex-col justify-between rounded-xl"
                 >
                   <div>
                     <h3 className="font-bold text-indigo-700 text-lg">
