@@ -150,18 +150,18 @@ const PendingConnections = () => {
                     </span>
                   </td>
                   <td className="py-3 px-4 border-b text-center space-x-2">
-                    <div className="flex flex-col items-center gap-1">
+                    <div className="flex space-x-2">
                       <button
                         onClick={() => approveMutation.mutate(conn.id)}
-                        className="px-3 py-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm w-28"
+                        className="flex items-center px-1 py-1 text-white rounded-lg text-sm w-28"
                       >
-                        Approve
+                        ✅
                       </button>
                       <button
                         onClick={() => rejectMutation.mutate(conn.id)}
-                        className="px-3 py-0 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm w-28"
+                        className="flex items- center px-1 py-1 text-white rounded-lg text-sm w-28"
                       >
-                        Reject
+                        ❌
                       </button>
                     </div>
                   </td>
