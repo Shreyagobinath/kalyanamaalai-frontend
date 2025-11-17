@@ -123,8 +123,8 @@ const UserDashboard = () => {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md flex flex-col fixed h-full">
-        <div className="px-6 py-6 text-2xl font-bold text-indigo-600 border-b">
-          User Panel
+        <div className="px-4 py-6 text-2xl font-semibold text-orange-600 border-b">
+          Kalyanamaalai💛
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           <Link
@@ -148,9 +148,9 @@ const UserDashboard = () => {
       {/* Main Section */}
       <div className="flex-1 ml-64 flex flex-col">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center relative">
-          <h1 className="text-xl font-semibold text-gray-800">
-            Welcome to Your Dashboard
+        <header className="bg-white shadow-sm px-6 py-5 flex justify-between items-center relative">
+          <h1 className="text-xl font-semibold text-orange-600">
+            User Dashboard
           </h1>
 
           <div className="flex items-center space-x-4 relative">
@@ -199,7 +199,7 @@ const UserDashboard = () => {
                 <img
                   src={profilePhoto}
                   alt="Profile"
-                  className="w-10 h-10 rounded-full cursor-pointer border-2 border-indigo-500 object-cover"
+                  className="w-10 h-10 rounded-full cursor-pointer border-2 border-orange-500 object-cover"
                   onClick={() => {
                     setDropdownOpen(!dropdownOpen);
                     setNotifOpen(false);
@@ -211,7 +211,7 @@ const UserDashboard = () => {
                     setDropdownOpen(!dropdownOpen);
                     setNotifOpen(false);
                   }}
-                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border-2 border-indigo-500"
+                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border-2 border-orange-500"
                 >
                   <UserIcon className="text-gray-500" size={22} />
                 </button>
@@ -244,7 +244,7 @@ const UserDashboard = () => {
 
         {/* Main Dashboard Content */}
         <main className="flex-1 p-6 overflow-y-auto">
-          <h2 className="text-lg font-semibold mb-4">Approved Members</h2>
+          <h2 className="text-lg font-semibold mb-4">Suggestions</h2>
           {isLoading ? (
             <p>Loading...</p>
           ) : approvedUsers.length === 0 ? (
@@ -254,10 +254,10 @@ const UserDashboard = () => {
               {approvedUsers.map((user,idx) => (
                 <div
                   key={`${user.id}-${idx}`}
-                  className="bg-gradient-to-r from-indigo-300 to-blue-100 shadow p-4 flex flex-col justify-between rounded-xl"
+                  className="bg-orange-100 backdrop-blur-lg border border-blue-200/30 shadow-2xl p-4 flex flex-col justify-between rounded-sm"
                 >
                   <div>
-                    <h3 className="font-bold text-indigo-700 text-lg">
+                    <h3 className="font-bold text-orange-700 text-lg">
                       {user.name}
                     </h3>
                     <p className="text-gray-600">Age: {user.age}</p>
@@ -265,7 +265,7 @@ const UserDashboard = () => {
                   </div>
                   <button
                     onClick={() => connectionMutation.mutate(user.id)}
-                    className="mt-3 bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition"
+                    className="mt-3 bg-orange-400 text-white py-2 px-4 rounded-sm hover:bg-orange-500 transition"
                   >
                     Send Connection Request
                   </button>

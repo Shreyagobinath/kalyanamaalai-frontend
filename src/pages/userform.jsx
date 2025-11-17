@@ -51,14 +51,14 @@ const UserForm = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto bg-blue-100 shadow-xl p-8 my-10 rounded-lg">
-      <h1 className="text-3xl font-bold text-center text-indigo-500 mb-8">
+    <div className="max-w-5xl mx-auto bg-orange-50 shadow-xl p-8 my-10 rounded-lg">
+      <h1 className="text-3xl font-bold text-center text-orange-500 mb-8">
         Matrimonial Profile Application / மணமகன் - மணமகள் விண்ணப்பம் 💍
       </h1>
 
       {/* Profile Photo Upload */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-32 h-32 mb-4 rounded-full overflow-hidden border-2 border-indigo-500">
+        <div className="w-32 h-32 mb-4 rounded-full overflow-hidden border-2 border-orange-300">
           {preview ? (
             <img
               src={preview}
@@ -66,7 +66,7 @@ const UserForm = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-orange-300">
               No Photo
             </div>
           )}
@@ -83,10 +83,10 @@ const UserForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* Personal Details */}
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-orange-600">
             Personal Details / தனிப்பட்ட விவரங்கள்
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-orange-500">
             {[
               { name: "full_name_en", label: "Full Name/ முழுப்பெயர்" },
               { name: "gender", label: "Gender / பாலினம்", type: "select", options: ["Male / ஆண்", "Female / பெண்"] },
@@ -129,10 +129,10 @@ const UserForm = () => {
 
         {/* Education & Occupation */}
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-orange-600">
             Education & Occupation / கல்வி மற்றும் தொழில்
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-orange-500">
             {[
               { name: "education_en", label: "Education/ கல்வி" },
               { name: "occupation_en", label: "Occupation/ தொழில்" },
@@ -152,10 +152,10 @@ const UserForm = () => {
 
         {/* Contact & Family Details */}
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-orange-600">
             Contact & Family Details / தொடர்பு மற்றும் குடும்ப விவரங்கள்
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-orange-500">
             {[
               { name: "address_en", label: "Address/ முகவரி" },
               { name: "phone", label: "Phone / தொலைபேசி" },
@@ -193,10 +193,10 @@ const UserForm = () => {
 
         {/* Partner Preferences */}
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-700">
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-orange-600">
             Partner Preference / எதிர்பார்ப்பு விவரங்கள்
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-orange-500">
             {[
               { name: "preferred_age_range", label: "Preferred Age Range / விருப்ப வயது" },
               { name: "preferred_religion", label: "Preferred Religion / விருப்ப மதம்" },
@@ -220,7 +220,7 @@ const UserForm = () => {
           <button
             type="submit"
             disabled={mutation.isLoading}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-sm shadow hover:bg-indigo-700 transition duration-300"
+            className="px-8 py-3 bg-orange-600 text-white rounded-sm shadow hover:bg-orange-700 transition duration-300"
           >
             {mutation.isLoading ? "Submitting..." : "Submit Application / விண்ணப்பத்தை சமர்ப்பிக்கவும்"}
           </button>

@@ -13,7 +13,9 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch recent user submissions (was notifications before)
+  const [filter, setFilter] = useState("all"); // all | approved | rejected
+
+  // Fetch recent user submissions
   const fetchNotifications = async () => {
     setLoading(true);
     try {
@@ -33,9 +35,17 @@ const AdminDashboard = () => {
     fetchNotifications();
   }, []);
 
+  // Filter notifications
+  const filteredNotifications = notifications.filter((n) => {
+    if (filter === "all") return true;
+    if (filter === "approved") return n.message?.toLowerCase().includes("approved");
+    if (filter === "rejected") return n.message?.toLowerCase().includes("rejected");
+    return true;
+  });
+
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/login"; // redirect to login
+    window.location.href = "/login";
   };
 
   return (
@@ -86,7 +96,6 @@ const AdminDashboard = () => {
       <div className="flex-1 flex flex-col">
         {/* Top bar */}
         <div className="flex justify-end items-center p-4 bg-white shadow-md border-b relative">
-          {/* Profile photo */}
           <div className="relative">
             <img
               src="https://i.pravatar.cc/40"
@@ -95,7 +104,6 @@ const AdminDashboard = () => {
               onClick={() => setDropdownOpen(!dropdownOpen)}
             />
 
-            {/* Dropdown menu */}
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md border border-gray-200 z-50">
                 <button
@@ -123,6 +131,7 @@ const AdminDashboard = () => {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
+          {/* Dashboard Section */}
           {activeTab === "dashboard" && (
             <div>
               <h1 className="text-3xl font-bold mb-4 text-indigo-600">
@@ -130,16 +139,33 @@ const AdminDashboard = () => {
               </h1>
 
               <h2 className="text-2xl font-semibold mb-5">
-                Recent User Form Requests
+                User Form Requests
               </h2>
+
+              {/* Filter Tabs */}
+              <div className="flex space-x-4 mb-6">
+                {["all", "approved", "rejected"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setFilter(tab)}
+                    className={`px-4 py-2 rounded-md font-medium capitalize transition ${
+                      filter === tab
+                        ? "bg-indigo-600 text-white shadow"
+                        : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
 
               {loading ? (
                 <div className="flex justify-center items-center h-40">
                   <Loader2 className="animate-spin text-gray-500" size={32} />
                 </div>
-              ) : notifications.length > 0 ? (
+              ) : filteredNotifications.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {notifications.map((note, idx) => (
+                  {filteredNotifications.map((note, idx) => (
                     <div
                       key={idx}
                       className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl p-5 border border-gray-200"
@@ -148,6 +174,7 @@ const AdminDashboard = () => {
                         <h2 className="font-semibold text-gray-900 text-lg">
                           {note.title || "User Form Request"}
                         </h2>
+
                         <p
                           className={`text-sm font-medium ${
                             note.message?.includes("approved")
@@ -159,9 +186,11 @@ const AdminDashboard = () => {
                         >
                           {note.message || "Status: pending"}
                         </p>
+
                         <p className="text-sm text-gray-500">
-                          {note.email || "No email available"}
+                          {note.email || "No email"}
                         </p>
+
                         <p className="text-xs text-gray-400 italic">
                           {note.date
                             ? new Date(note.date).toLocaleString()
@@ -173,11 +202,12 @@ const AdminDashboard = () => {
                 </div>
               ) : (
                 <p className="text-gray-500 italic text-center mt-10">
-                  No recent user form requests found.
+                  No {filter} requests found.
                 </p>
               )}
             </div>
           )}
+
           {activeTab === "pendingUsers" && <AdminForms />}
           {activeTab === "allUsers" && <AllUsers />}
           {activeTab === "pendingConnections" && <PendingConnections />}

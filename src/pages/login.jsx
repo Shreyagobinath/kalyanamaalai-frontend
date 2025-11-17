@@ -34,9 +34,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-200">
       <div className="bg-white shadow-xl rounded-lg p-10 w-96">
-        <h2 className="text-2xl font-bold text-center text-indigo-600 mb-6">
+        <h2 className="text-2xl font-bold text-center text-orange-600 mb-6">
           Login
         </h2>
 
@@ -50,7 +50,7 @@ const Login = () => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border rounded-lg p-2"
+            className="border rounded-sm p-2"
             required
           />
           <input
@@ -58,12 +58,12 @@ const Login = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border rounded-lg p-2"
+            className="border rounded-sm p-2"
             required
           />
           <button
             type="submit"
-            className="bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
+            className="bg-orange-400 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition duration-300"
           >
             Login
           </button>
@@ -73,7 +73,7 @@ const Login = () => {
           Don’t have an account?{" "}
           <span
             onClick={() => navigate("/register")}
-            className="text-indigo-600 cursor-pointer font-semibold"
+            className="text-orange-500 cursor-pointer font-semibold"
           >
             Sign Up
           </span>

@@ -37,12 +37,13 @@ const Register = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-4 text-center text-indigo-600">
+    <div className="min-h-screen flex items-center justify-center bg-gray-200">
+    <div className="w-full max-w-sm mx-auto mt-20 p-6 bg-white rounded-lg shadow-lg">
+      <h1 className="text-2xl font-bold mb-4 text-center text-orange-500">
         Register
       </h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 ">
         <div>
           <label className="block mb-1 font-medium">Name</label>
           <input
@@ -50,46 +51,47 @@ const Register = () => {
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="w-full border rounded-lg p-2"
+            className="w-full border rounded-sm p-2"
             required
           />
         </div>
         <div>
-          <label className="block mb-1 font-medium">Email</label>
+          <label className="block mb-0 font-medium">Email</label>
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={handleChange}
-            className="w-full border rounded-lg p-2"
+            className="w-full border rounded-sm p-2"
             required
           />
         </div>
         <div>
-          <label className="block mb-1 font-medium">Password</label>
+          <label className="block mb-0 font-medium">Password</label>
           <input
             type="password"
             name="password"
             value={form.password}
             onChange={handleChange}
-            className="w-full border rounded-lg p-2"
+            className="w-full border rounded-sm p-2"
             required
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-300"
+          className="w-full py-2 px-4 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-300"
         >
           {loading ? "Registering..." : "Register"}
         </button>
       </form>
       <p className="mt-4 text-center">
         Already have an account?{" "}
-        <Link to="/login" className="text-indigo-600 hover:underline">
+        <Link to="/login" className="text-orange-500 hover:underline">
           Login
         </Link>
       </p>
+    </div>
     </div>
   );
 };

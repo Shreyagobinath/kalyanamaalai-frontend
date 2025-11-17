@@ -84,18 +84,20 @@ const AdminForms = () => {
                   </td>
 
                   <td className="py-3 px-4 border-b text-center">
-                    <div className="flex flex-col items-center gap-3">
+                    <div className="flex justify-center gap-2">
                       <button
                         onClick={() => approveMutation.mutate(form.id)}
-                        className="px-4 py-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm shadow-sm transition-colors w-28"
+                        className="p-2 hover:bg-emerald-300 text-white rounded-lg  shadow-sm transition-colors "
+                        title="Approve"
                       >
-                        Approve
+                        ✅
                       </button>
                       <button
                         onClick={() => rejectMutation.mutate(form.id)}
-                        className="px-4 py-0 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm shadow-sm transition-colors w-28"
+                        className="p-2 hover:bg-rose-300 text-white rounded-lg  shadow-sm transition-colors "
+                        title="Reject"
                       >
-                        Reject
+                      ❌
                       </button>
                     </div>
                   </td>
