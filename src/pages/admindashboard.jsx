@@ -12,35 +12,18 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [filter, setFilter] = useState("all");
 
-  // Store selected user for modal
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [filter, setFilter] = useState("all"); // all | approved | rejected
 
-  // Fetch user full details for modal
-  const handleViewUser = async (userId) => {
-    try {
-      const token = localStorage.getItem("token");
-      const { data } = await API.get(`/admin/user/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSelectedUser(data);
-      setShowModal(true);
-    } catch (err) {
-      console.error("Error loading user:", err);
-    }
-  };
-
-  // Fetch notifications for dashboard
+  // Fetch recent user submissions
   const fetchNotifications = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const { data } = await API.get("/admin/notifications", {
+      const res = await API.get("/admin/notifications", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setNotifications(data || []);
+      setNotifications(res.data || []);
     } catch (err) {
       console.error("Error fetching notifications:", err);
     } finally {
@@ -52,10 +35,11 @@ const AdminDashboard = () => {
     fetchNotifications();
   }, []);
 
+  // Filter notifications
   const filteredNotifications = notifications.filter((n) => {
     if (filter === "all") return true;
-    if (filter === "approved") return n.form_status?.toLowerCase() === "approved";
-    if (filter === "rejected") return n.form_status?.toLowerCase() === "rejected";
+    if (filter === "approved") return n.message?.toLowerCase().includes("approved");
+    if (filter === "rejected") return n.message?.toLowerCase().includes("rejected");
     return true;
   });
 
@@ -81,7 +65,6 @@ const AdminDashboard = () => {
           >
             <FaHome /> Dashboard
           </button>
-
           <button
             className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
               activeTab === "pendingUsers" ? "bg-indigo-500" : ""
@@ -90,7 +73,6 @@ const AdminDashboard = () => {
           >
             <FaClipboardList /> Pending Forms
           </button>
-
           <button
             className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
               activeTab === "pendingConnections" ? "bg-indigo-500" : ""
@@ -99,7 +81,6 @@ const AdminDashboard = () => {
           >
             <FaUsers /> Pending Connections
           </button>
-
           <button
             className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-indigo-500 w-full text-left ${
               activeTab === "allUsers" ? "bg-indigo-500" : ""
@@ -113,23 +94,53 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        {/* Top Bar */}
-<div className="flex justify-end items-center p-4 bg-white shadow-md border-b relative">
-  <button
-    onClick={handleLogout}
-    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-  >
-    Logout
-  </button>
-</div>
+        {/* Top bar */}
+        <div className="flex justify-end items-center p-4 bg-white shadow-md border-b relative">
+          <div className="relative">
+            <img
+              src="https://i.pravatar.cc/40"
+              alt="Profile"
+              className="w-10 h-10 rounded-full cursor-pointer border-2 border-indigo-500"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            />
 
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md border border-gray-200 z-50">
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => alert("Profile clicked")}
+                >
+                  Profile
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => alert("Account details clicked")}
+                >
+                  Account Details
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
+          {/* Dashboard Section */}
           {activeTab === "dashboard" && (
             <div>
-              <h1 className="text-3xl font-bold mb-6 text-indigo-600">Welcome, Admin</h1>
+              <h1 className="text-3xl font-bold mb-4 text-indigo-600">
+                Welcome, Admin
+              </h1>
+
+              <h2 className="text-2xl font-semibold mb-5">
+                User Form Requests
+              </h2>
 
               {/* Filter Tabs */}
               <div className="flex space-x-4 mb-6">
@@ -139,7 +150,7 @@ const AdminDashboard = () => {
                     onClick={() => setFilter(tab)}
                     className={`px-4 py-2 rounded-md font-medium capitalize transition ${
                       filter === tab
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-indigo-600 text-white shadow"
                         : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
                     }`}
                   >
@@ -152,74 +163,56 @@ const AdminDashboard = () => {
                 <div className="flex justify-center items-center h-40">
                   <Loader2 className="animate-spin text-gray-500" size={32} />
                 </div>
-              ) : filteredNotifications.length ? (
+              ) : filteredNotifications.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredNotifications.map((note, idx) => (
-                    <div key={idx} className="bg-white rounded-xl p-5 shadow border">
-                      <h2 className="font-semibold text-lg">{note.user_name}</h2>
-                      <p className="text-sm"><strong>Email:</strong> {note.user_email}</p>
-                      <p className="text-sm">
-                        <strong>Form Submitted At:</strong> {new Date(note.form_submitted_at).toLocaleString()}
-                      </p>
-                      <p className="text-sm">
-                        <strong>Status:</strong>{" "}
-                        <span
-                          className={`font-semibold ${
-                            note.form_status === "Approved"
+                    <div
+                      key={idx}
+                      className="bg-white shadow-md hover:shadow-lg transition-all rounded-xl p-5 border border-gray-200"
+                    >
+                      <div className="flex flex-col space-y-2">
+                        <h2 className="font-semibold text-gray-900 text-lg">
+                          {note.title || "User Form Request"}
+                        </h2>
+
+                        <p
+                          className={`text-sm font-medium ${
+                            note.message?.includes("approved")
                               ? "text-green-600"
-                              : note.form_status === "Rejected"
+                              : note.message?.includes("rejected")
                               ? "text-red-600"
-                              : "text-gray-600"
+                              : "text-yellow-600"
                           }`}
                         >
-                          {note.form_status}
-                        </span>
-                      </p>
+                          {note.message || "Status: pending"}
+                        </p>
+
+                        <p className="text-sm text-gray-500">
+                          {note.email || "No email"}
+                        </p>
+
+                        <p className="text-xs text-gray-400 italic">
+                          {note.date
+                            ? new Date(note.date).toLocaleString()
+                            : "No date"}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-gray-500">No data found</p>
+                <p className="text-gray-500 italic text-center mt-10">
+                  No {filter} requests found.
+                </p>
               )}
             </div>
           )}
 
-          {activeTab === "pendingUsers" && <AdminForms onViewUser={handleViewUser} />}
-          {activeTab === "allUsers" && <AllUsers onViewUser={handleViewUser} />}
-          {activeTab === "pendingConnections" && (
-            <PendingConnections onViewUser={handleViewUser} />
-          )}
+          {activeTab === "pendingUsers" && <AdminForms />}
+          {activeTab === "allUsers" && <AllUsers />}
+          {activeTab === "pendingConnections" && <PendingConnections />}
         </div>
       </div>
-
-      {/* User Details Modal */}
-      {showModal && selectedUser && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4 text-indigo-600">User Details</h2>
-
-            {Object.keys(selectedUser).length === 0 ? (
-              <p>No details available.</p>
-            ) : (
-              Object.entries(selectedUser).map(([key, value]) => (
-                <p key={key} className="text-sm mb-1">
-                  <strong>{key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}:</strong>{" "}
-                  {value || "—"}
-                </p>
-              ))
-            )}
-
-            <div className="mt-5 text-right">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
