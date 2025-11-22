@@ -2,11 +2,10 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard,
-  FileText,
   Heart,
   LogOut,
   Bell,
-  User as UserIcon, // ✅ Default icon
+  User as UserIcon,
 } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,28 +13,28 @@ import API from "../api/axios";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-// 🔹 Fetch notifications
+// Fetch notifications
 const fetchNotifications = async () => {
   const res = await API.get("/user/notifications");
   return res.data;
 };
 
-// 🔹 Fetch approved users
+// Fetch approved users
 const fetchApprovedUsers = async () => {
   const res = await API.get("/user/approved");
   return res.data;
 };
 
-// 🔹 Mark notifications as read
+// Mark notifications as read
 const markReadNotifications = async () => {
   const res = await API.put("/user/notifications/mark-read");
   return res.data;
 };
 
-// 🔹 Fetch user profile (for uploaded profile photo)
+// Fetch user profile
 const fetchUserProfile = async () => {
   const token = localStorage.getItem("token");
-  const res = await API.get("/user/account-details", {
+  const res = await API.get("/ser/account-details", {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data;
@@ -48,19 +47,16 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // ✅ Fetch approved users
   const { data: approvedUsers = [], isLoading } = useQuery({
     queryKey: ["approvedUsers"],
     queryFn: fetchApprovedUsers,
   });
 
-  // ✅ Fetch notifications
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
   });
 
-  // ✅ Fetch profile photo from backend
   useQuery({
     queryKey: ["userProfile"],
     queryFn: fetchUserProfile,
@@ -68,41 +64,31 @@ const UserDashboard = () => {
       if (data?.profile_photo) {
         setProfilePhoto(`${BASE_URL}/uploads/profile_photos/${data.profile_photo}`);
       } else {
-        setProfilePhoto(null); // No photo → use default icon
+        setProfilePhoto(null);
       }
     },
-    onError: () => {
-      setProfilePhoto(null);
-    },
+    onError: () => setProfilePhoto(null),
   });
 
-  // ✅ Mark notifications as read
   const markReadMutation = useMutation({
     mutationFn: markReadNotifications,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
-    },
+    onSuccess: () => queryClient.invalidateQueries(["notifications"]),
   });
 
-  // ✅ Send connection request
   const connectionMutation = useMutation({
     mutationFn: (receiverId) => API.post("/user/connect", { receiverId }),
     onSuccess: () => {
       alert("Request sent to admin for approval!");
       queryClient.invalidateQueries(["approvedUsers"]);
     },
-    onError: (error) => {
-      alert("Failed to send request: " + error.message);
-    },
+    onError: (error) => alert("Failed to send request: " + error.message),
   });
 
-  // ✅ Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  // ✅ Toggle notifications dropdown
   const handleNotifToggle = async () => {
     const newState = !notifOpen;
     setNotifOpen(newState);
@@ -154,7 +140,7 @@ const UserDashboard = () => {
           </h1>
 
           <div className="flex items-center space-x-4 relative">
-            {/* 🔔 Notifications */}
+            {/* Notifications */}
             <div className="relative">
               <button
                 onClick={handleNotifToggle}
@@ -174,12 +160,10 @@ const UserDashboard = () => {
                     Notifications
                   </div>
                   {notifications.length === 0 ? (
-                    <p className="p-3 text-gray-500 text-sm">
-                      No new notifications
-                    </p>
+                    <p className="p-3 text-gray-500 text-sm">No new notifications</p>
                   ) : (
                     <ul className="divide-y divide-gray-100">
-                      {notifications.map((note,idx) => (
+                      {notifications.map((note, idx) => (
                         <li key={`${note.id}-${idx}`} className="p-3 hover:bg-gray-50">
                           <p className="text-gray-700 text-sm">{note.message}</p>
                           <span className="text-xs text-gray-400">
@@ -193,7 +177,7 @@ const UserDashboard = () => {
               )}
             </div>
 
-            {/* 👤 Profile (Uploaded or Default) */}
+            {/* Profile */}
             <div className="relative">
               {profilePhoto ? (
                 <img
@@ -219,16 +203,6 @@ const UserDashboard = () => {
 
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border z-50">
-                  <Link
-                    to="/user/form"
-                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    <FileText className="mr-2" size={16} />
-                    Fill Form
-                  </Link>
-
-                  <hr className="my-1" />
-
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
@@ -251,15 +225,13 @@ const UserDashboard = () => {
             <p>No approved users available.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {approvedUsers.map((user,idx) => (
+              {approvedUsers.map((user, idx) => (
                 <div
                   key={`${user.id}-${idx}`}
                   className="bg-orange-100 backdrop-blur-lg border border-blue-200/30 shadow-2xl p-4 flex flex-col justify-between rounded-sm"
                 >
                   <div>
-                    <h3 className="font-bold text-orange-700 text-lg">
-                      {user.name}
-                    </h3>
+                    <h3 className="font-bold text-orange-700 text-lg">{user.name}</h3>
                     <p className="text-gray-600">Age: {user.age}</p>
                     <p className="text-gray-600">Location: {user.city}</p>
                   </div>
@@ -281,3 +253,4 @@ const UserDashboard = () => {
 };
 
 export default UserDashboard;
+

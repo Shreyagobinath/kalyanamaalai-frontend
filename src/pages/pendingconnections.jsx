@@ -48,7 +48,7 @@ const PendingConnections = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await API.get(`/admin/user/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token} `},
       });
 
       setSelectedUser(res.data);
