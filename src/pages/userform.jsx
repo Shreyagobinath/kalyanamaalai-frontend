@@ -1,3 +1,4 @@
+// src/pages/UserForm.jsx
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
@@ -22,6 +23,7 @@ const UserForm = () => {
   // ---------------------------
   useEffect(() => {
     const checkAccessAndLoadForm = async () => {
+      console.log("[UserForm] Checking access and loading existing form...");
       const token = localStorage.getItem("token");
       if (!token) return navigate("/login");
 
@@ -30,29 +32,28 @@ const UserForm = () => {
         const base64Payload = token.split(".")[1];
         const payload = JSON.parse(atob(base64Payload));
         const role = payload.role;
+        console.log("[UserForm] JWT role:", role);
 
         if (role !== "user") return navigate("/admin/dashboard");
 
         // Fetch existing form (if any)
-             const res = await axios.get(
-              "http://localhost:5000/api/v1/user/forms/status",
-               { headers: { Authorization: `Bearer ${token}` } }
-                );
-
+        const res = await axios.get(
+          "http://localhost:5000/api/v1/user/form/status",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
         const form = res.data?.form || null;
 
         if (form) {
-          // Pre-fill form fields
           Object.keys(form).forEach((key) => setValue(key, form[key]));
           if (form.profile_photo) setPreview(`http://localhost:5000/uploads/${form.profile_photo}`);
         }
 
-        // If user has completed form, redirect to Thank You page
+        // Redirect if form completed or approved
         if (res.data?.hasForm) return navigate("/thank-you");
         if (res.data?.isApproved) return navigate("/user/dashboard");
       } catch (err) {
-        console.log("No existing form, continue to fill:", err.message);
+        console.log("[UserForm] No existing form, continue to fill:", err.message);
       } finally {
         setLoading(false);
       }
@@ -81,7 +82,7 @@ const UserForm = () => {
       Object.keys(data).forEach((key) => formData.append(key, data[key]));
       if (profilePhoto) formData.append("profile_photo", profilePhoto);
 
-      await axios.post("http://localhost:5000/api/v1/user/submit-form", formData, {
+      await axios.post("http://localhost:5000/api/v1/user/form", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -96,7 +97,7 @@ const UserForm = () => {
       setProfilePhoto(null);
       setPreview(null);
     } catch (err) {
-      console.error("Form submit error:", err.response?.data || err);
+      console.error("[UserForm] Form submit error:", err.response?.data || err);
       alert("Error submitting form. Try again.");
     }
   };
@@ -134,7 +135,12 @@ const UserForm = () => {
     { name: "mother_name_en", label: "Mother Name / தாயின் பெயர்" },
     { name: "siblings", label: "Siblings / சகோதரர்கள்" },
     { name: "location", label: "Location / இடம்" },
-    { name: "marital_status", type: "select", label: "Marital Status / திருமண நிலை", options: ["Single / திருமணம் ஆகாதவர்", "Divorced / விவாகரத்து", "Widowed / விதவை"] },
+    {
+      name: "marital_status",
+      type: "select",
+      label: "Marital Status / திருமண நிலை",
+      options: ["Single / திருமணம் ஆகாதவர்", "Divorced / விவாகரத்து", "Widowed / விதவை"],
+    },
   ];
 
   const partnerPreference = [
@@ -148,6 +154,7 @@ const UserForm = () => {
     fields.map((field) => (
       <div key={field.name}>
         <label className="block font-medium mb-1 text-black">{field.label} *</label>
+
         {field.type === "select" ? (
           <select
             {...register(field.name, { required: `${field.label} is required` })}
@@ -167,7 +174,8 @@ const UserForm = () => {
             className="w-full border rounded-sm p-2 text-black"
           />
         )}
-        {errors[field.name] && <p className="text-red-500 text-sm">{errors[field.name].message}</p>}
+
+        {errors[field.name] && <p className="text-red-500 text-sm">{errors[field.name]?.message}</p>}
       </div>
     ));
 
@@ -192,22 +200,30 @@ const UserForm = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">Personal Details / தனிப்பட்ட விவரங்கள்</h2>
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">
+            Personal Details / தனிப்பட்ட விவரங்கள்
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">{renderFields(personalDetails)}</div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">Education & Occupation / கல்வி மற்றும் தொழில்</h2>
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">
+            Education & Occupation / கல்வி மற்றும் தொழில்
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">{renderFields(educationDetails)}</div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">Contact & Family Details / தொடர்பு & குடும்ப விவரங்கள்</h2>
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">
+            Contact & Family Details / தொடர்பு & குடும்ப விவரங்கள்
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">{renderFields(contactFamilyDetails)}</div>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">Partner Preference / எதிர்பார்ப்பு விவரங்கள்</h2>
+          <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-black">
+            Partner Preference / எதிர்பார்ப்பு விவரங்கள்
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">{renderFields(partnerPreference)}</div>
         </section>
 
@@ -225,4 +241,3 @@ const UserForm = () => {
 };
 
 export default UserForm;
-

@@ -1,11 +1,9 @@
 // src/pages/Login.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
-
+// Local Popup Notification Component
 const NotificationPopup = ({ message }) => {
   if (!message) return null;
   return (
@@ -15,6 +13,8 @@ const NotificationPopup = ({ message }) => {
   );
 };
 
+console.log("🔵 Login Page Rendered");
+
 const Login = () => {
   const navigate = useNavigate();
 
@@ -23,7 +23,8 @@ const Login = () => {
   const [error, setError] = useState("");
   const [notification, setNotification] = useState("");
 
-  const checkFormStatus = async () => {
+  // 👇 useCallback removes the dependency warning
+  const checkFormStatus = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
@@ -43,24 +44,21 @@ const Login = () => {
       console.error("Error checking form status:", err);
       alert("Unable to check status right now. Try again later.");
     }
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    if (token) {
-      if (role === "admin") navigate("/admin/dashboard");
-      else checkFormStatus();
-    }
   }, [navigate]);
 
-  useEffect(() => {
-    socket.on("notification", (msg) => {
-      setNotification(msg);
-      setTimeout(() => setNotification(""), 3000);
-    });
-    return () => socket.off("notification");
-  }, []);
+  // Auto-login redirect if token exists
+  /*useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+ if (window.location.pathname === "/login") return;
+
+  if (token) {
+    if (role === "admin") navigate("/admin/dashboard");
+    else checkFormStatus();
+    }
+  }, [navigate, checkFormStatus]);*/
+
+  // Removed the socket notification listener completely
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -70,9 +68,9 @@ const Login = () => {
       const res = await API.post("/auth/login", { email, password });
       const { token, role, user } = res.data || {};
 
-      if (!token || !user) return setError("Login failed: invalid server response");
+      if (!token || !user)
+        return setError("Login failed: invalid server response");
 
-      // Use full_name_en if name is undefined
       const username = user.name || user.full_name_en || "User";
 
       localStorage.setItem("token", token);
@@ -82,8 +80,8 @@ const Login = () => {
       localStorage.setItem("form_completed", user.form_completed || 0);
       localStorage.setItem("isApproved", user.isApproved || 0);
 
-      setNotification(`💍 ${username} logged successfully in Kalyanamalai`);
-      setTimeout(() => setNotification(""), 3000);
+      setNotification(`💍 ${username} logged in successfully!`);
+      setTimeout(() => setNotification(""), 2500);
 
       setTimeout(() => {
         if (role === "admin") navigate("/admin/dashboard");

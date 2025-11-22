@@ -12,11 +12,11 @@ import AllUsers from "./pages/allusers";
 import PendingConnections from "./pages/pendingconnections";
 import ThankYou from "./pages/thankyou";
 
-// 🔥 IMPORTANT — NEW COMPONENT
-import ProtectedUserDashboard from "./components/ProtectedUserDashboard";  
+// ⬇️ YOU ALREADY HAVE THIS — KEEP IT
+import ProtectedUserDashboard from "./components/ProtectedUserDashboard";
 
-// Existing protected route (token only)
 const getToken = () => localStorage.getItem("token");
+
 const ProtectedRoute = ({ children }) => {
   if (!getToken()) return <Navigate to="/login" replace />;
   return children;
@@ -37,9 +37,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* ============================
-          ADMIN PROTECTED ROUTES
-         ============================ */}
+      {/* Admin */}
       <Route
         path="/admin/dashboard"
         element={
@@ -67,11 +65,7 @@ function App() {
         }
       />
 
-      {/* ============================================
-          USER ROUTES — RESTRICTED BY APPROVAL STATUS
-         ============================================ */}
-
-      {/* ✔ User Dashboard must check approval BEFORE opening */}
+      {/* User Dashboard with approval logic */}
       <Route
         path="/user/dashboard"
         element={
@@ -81,7 +75,7 @@ function App() {
         }
       />
 
-      {/* User form can be accessed if logged in */}
+      {/* User Form */}
       <Route
         path="/user/form"
         element={
@@ -91,7 +85,6 @@ function App() {
         }
       />
 
-      {/* Thank You page after form submit */}
       <Route
         path="/thank-you"
         element={
@@ -101,7 +94,7 @@ function App() {
         }
       />
 
-      {/* Dashboard redirect logic */}
+      {/* Auto redirect */}
       <Route
         path="/dashboard"
         element={
@@ -111,8 +104,8 @@ function App() {
         }
       />
 
-      {/* fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* 404 */}
+      <Route path="*" element={<div>404 Page Not Found</div>} />
     </Routes>
   );
 }

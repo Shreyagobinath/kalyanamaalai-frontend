@@ -2,9 +2,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:5000");
 
 // Popup Notification Component
 const NotificationPopup = ({ message }) => {
@@ -38,15 +35,6 @@ const Register = () => {
   const [error, setError] = useState("");
   const [notification, setNotification] = useState("");
 
-  // Backend notifications (optional)
-  useEffect(() => {
-    socket.on("notification", (msg) => {
-      setNotification(msg);
-      setTimeout(() => setNotification(""), 3000);
-    });
-    return () => socket.off("notification");
-  }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
@@ -58,14 +46,12 @@ const Register = () => {
     setError("");
 
     try {
-      // Map frontend "name" to backend "full_name_en"
       const payload = { ...form, full_name_en: form.name };
       await API.post("/auth/register", payload);
 
       setNotification(`💍 ${form.name} registered successfully!`);
       setTimeout(() => setNotification(""), 3000);
 
-      // Redirect to login after short delay
       setTimeout(() => navigate("/login"), 1200);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");

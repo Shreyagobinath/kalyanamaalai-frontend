@@ -1,30 +1,53 @@
 // src/components/ProtectedUserDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import API from "../api/axios";
+import API from "../api/axios"; // axios instance with baseURL
 
 const ProtectedUserDashboard = ({ children }) => {
   const [checking, setChecking] = useState(true);
-  const [allowed, setAllowed] = useState(false);
+  const [route, setRoute] = useState(null);
 
   useEffect(() => {
     let mounted = true;
-    const verify = async () => {
-      try {
-        const res = await API.get("/auth/form-status");
-        const { isApproved, hasForm } = res.data || {};
 
-        // allow only if user has submitted form AND is approved
-        if (mounted && hasForm && isApproved === true) {
-          setAllowed(true);
+    const verify = async () => {
+      console.log("[Dashboard] Checking user form status...");
+
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+
+        const res = await API.get("/user/form/status", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("[Dashboard] API response:", res.data);
+
+        if (!mounted) return;
+
+        const { hasForm, isApproved } = res.data || {};
+
+        if (!hasForm) {
+          console.log("[Dashboard] User has not filled the form → redirect to /user/form");
+          setRoute("/user/form");
+        } else if (hasForm && !isApproved) {
+          console.log("[Dashboard] Form submitted but not approved → redirect to /thank-you");
+          setRoute("/thank-you");
+        } else if (hasForm && isApproved) {
+          console.log("[Dashboard] User approved → allow dashboard");
+          setRoute("ALLOW");
         } else {
-          setAllowed(false);
+          console.log("[Dashboard] Unknown status → redirect to /login");
+          setRoute("/login");
         }
       } catch (err) {
-        // if error, block access
-        setAllowed(false);
+        console.error("[Dashboard] Error verifying user:", err);
+        setRoute("/login");
       } finally {
-        if (mounted) setChecking(false);
+        if (mounted) {
+          setChecking(false);
+          console.log("[Dashboard] Finished checking");
+        }
       }
     };
 
@@ -33,17 +56,16 @@ const ProtectedUserDashboard = ({ children }) => {
   }, []);
 
   if (checking) {
-    // show a small loading placeholder while verifying
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div>Loading...</div>
+        <div>Loading user dashboard...</div>
       </div>
     );
   }
 
-  if (!allowed) {
-    // not allowed → send to thank-you (if form submitted) or to form
-    return <Navigate to="/thank-you" replace />;
+  if (route && route !== "ALLOW") {
+    console.log("[Dashboard] Redirecting to:", route);
+    return <Navigate to={route} replace />;
   }
 
   return children;
