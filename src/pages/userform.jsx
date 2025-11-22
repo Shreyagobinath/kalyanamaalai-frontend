@@ -82,7 +82,7 @@ const UserForm = () => {
       Object.keys(data).forEach((key) => formData.append(key, data[key]));
       if (profilePhoto) formData.append("profile_photo", profilePhoto);
 
-      await axios.post("http://localhost:5000/api/v1/user/form", formData, {
+      await axios.post("http://localhost:5000/api/v1/user/forms", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
