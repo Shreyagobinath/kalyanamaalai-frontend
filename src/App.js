@@ -1,45 +1,33 @@
 // src/App.js
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/login";
 import Register from "./pages/register";
 import UserForm from "./pages/userform";
 import Home from "./pages/home";
 import UserDashboard from "./pages/userdashboard";
-import AdminDashboard from "./pages/admindashboard"
+import AdminDashboard from "./pages/admindashboard";
 import AllUsers from "./pages/allusers";
 import PendingConnections from "./pages/pendingconnections";
+import ThankYou from "./pages/thankyou";
 
+// 🔥 IMPORTANT — NEW COMPONENT
+import ProtectedUserDashboard from "./components/ProtectedUserDashboard";  
 
-// Auth helpers
+// Existing protected route (token only)
 const getToken = () => localStorage.getItem("token");
-const getRole = () => localStorage.getItem("role");
-
-// Protected route wrapper
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const token = getToken();
-  const role = getRole();
-
-  if (!token) return <Navigate to="/login" replace />;
-  if (adminOnly && role !== "admin") return <Navigate to="/login" replace />;
-
+const ProtectedRoute = ({ children }) => {
+  if (!getToken()) return <Navigate to="/login" replace />;
   return children;
 };
 
-// Dashboard component that chooses based on role
-const Dashboard = () => {
-  const role = getRole();
-  if (role === "admin") return <AdminDashboard/>;
-  return <UserDashboard />;
+const DashboardSelector = () => {
+  const role = localStorage.getItem("role");
+  if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
+  if (role === "user") return <Navigate to="/user/dashboard" replace />;
+  return <Navigate to="/login" replace />;
 };
-
-// Simple 404 page
-const NotFound = () => (
-  <div className="text-center mt-20">
-    <h1 className="text-3xl font-bold">404 - Page Not Found</h1>
-    <p>The page you are looking for does not exist.</p>
-  </div>
-);
 
 function App() {
   return (
@@ -48,41 +36,52 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/admin/users" element={
-        <ProtectedRoute adminOnly={true}>
-          <AllUsers />
-        </ProtectedRoute>
-      } />
 
+      {/* ============================
+          ADMIN PROTECTED ROUTES
+         ============================ */}
       <Route
-  path="/admin/dashboard"
-  element={
-    <ProtectedRoute adminOnly={true}>
-      <AdminDashboard />
-    </ProtectedRoute>
-  }
-/>
-
-<Route
-  path="/user/dashboard"
-  element={
-    <ProtectedRoute>
-      <UserDashboard />
-    </ProtectedRoute>
-  }
-/>
-
-      {/* Dashboard: dynamically renders user or admin component */}
-      <Route
-        path="/dashboard"
+        path="/admin/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <AdminDashboard />
           </ProtectedRoute>
         }
       />
 
-      {/* User Protected Routes */}
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <AllUsers />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/connections/pending"
+        element={
+          <ProtectedRoute>
+            <PendingConnections />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ============================================
+          USER ROUTES — RESTRICTED BY APPROVAL STATUS
+         ============================================ */}
+
+      {/* ✔ User Dashboard must check approval BEFORE opening */}
+      <Route
+        path="/user/dashboard"
+        element={
+          <ProtectedUserDashboard>
+            <UserDashboard />
+          </ProtectedUserDashboard>
+        }
+      />
+
+      {/* User form can be accessed if logged in */}
       <Route
         path="/user/form"
         element={
@@ -92,18 +91,28 @@ function App() {
         }
       />
 
-      {/* Admin Protected Routes */}
+      {/* Thank You page after form submit */}
       <Route
-        path="/admin/connections/pending"
+        path="/thank-you"
         element={
-          <ProtectedRoute adminOnly={true}>
-            <PendingConnections />
+          <ProtectedRoute>
+            <ThankYou />
           </ProtectedRoute>
         }
       />
 
-      {/* 404 Fallback */}
-      <Route path="*" element={<NotFound />} />
+      {/* Dashboard redirect logic */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardSelector />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
