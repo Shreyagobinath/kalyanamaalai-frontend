@@ -79,7 +79,9 @@ const AllUsers = () => {
               filteredUsers.map((user, index) => (
                 <tr key={user.id} className="hover:bg-gray-50 transition">
                   <td className="py-3 px-4 border-b">{index + 1}</td>
-                  <td className="py-3 px-4 border-b font-medium">{user.name}</td>
+                  <td className="py-3 px-4 border-b font-medium">
+                    {user.full_name_en || user.full_name || user.Name || "N/A"}</td>
+
                   <td className="py-3 px-4 border-b">{user.email}</td>
                   <td className="py-3 px-4 border-b capitalize">
                     {user.gender || "N/A"}

@@ -1,7 +1,7 @@
 // src/components/ProtectedUserDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import API from "../api/axios"; // axios instance with baseURL
+import API from "../api/axios";
 
 const ProtectedUserDashboard = ({ children }) => {
   const [checking, setChecking] = useState(true);
@@ -30,19 +30,23 @@ const ProtectedUserDashboard = ({ children }) => {
         if (!hasForm) {
           console.log("[Dashboard] User has not filled the form → redirect to /user/form");
           setRoute("/user/form");
-        } else if (hasForm && !isApproved) {
+        } 
+        else if (hasForm && !isApproved) {
           console.log("[Dashboard] Form submitted but not approved → redirect to /thank-you");
           setRoute("/thank-you");
-        } else if (hasForm && isApproved) {
+        } 
+        else if (hasForm && isApproved) {
           console.log("[Dashboard] User approved → allow dashboard");
           setRoute("ALLOW");
-        } else {
+        } 
+        else {
           console.log("[Dashboard] Unknown status → redirect to /login");
           setRoute("/login");
         }
+
       } catch (err) {
         console.error("[Dashboard] Error verifying user:", err);
-        setRoute("/login");
+        setRoute("/thank-you");
       } finally {
         if (mounted) {
           setChecking(false);

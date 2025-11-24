@@ -13,7 +13,7 @@ const ThankYou = () => {
     let mounted = true;
     const checkOnce = async () => {
       try {
-        const res = await API.get("/auth/form-status");
+        const res = await API.get("/auth/check-form-status");
         if (mounted && res?.data?.isApproved === true) {
           navigate("/user/dashboard");
         }
@@ -36,7 +36,7 @@ const ThankYou = () => {
       setChecking(true);
       setMessage("");
 
-      const res = await API.get("/auth/form-status");
+      const res = await API.get("/auth/check-form-status");
       const { isApproved, hasForm } = res.data || {};
 
       if (isApproved === true) {
@@ -50,9 +50,9 @@ const ThankYou = () => {
     } catch (err) {
       console.error("Error checking approval:", err);
       setMessage("Unable to check status right now. Try again later.");
-    } finally {
-      setChecking(false);
-    }
+    } //finally {
+      //setChecking(false);
+    //}
   };
 
   // Logout function

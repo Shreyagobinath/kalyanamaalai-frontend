@@ -13,8 +13,6 @@ const NotificationPopup = ({ message }) => {
   );
 };
 
-console.log("🔵 Login Page Rendered");
-
 const Login = () => {
   const navigate = useNavigate();
 
@@ -22,8 +20,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [notification, setNotification] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // 👇 useCallback removes the dependency warning
+  // Check form status for logged-in user
   const checkFormStatus = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -37,59 +36,52 @@ const Login = () => {
       localStorage.setItem("hasSubmittedForm", data.hasForm ? 1 : 0);
       localStorage.setItem("isApproved", data.isApproved ? 1 : 0);
 
-      if (data.hasForm && !data.isApproved) navigate("/thank-you");
-      else if (data.isApproved) navigate("/user/dashboard");
-      else navigate("/user/form");
+      if (!data.hasForm) navigate("/user/form");         // New user → fill form
+      else if (!data.isApproved) navigate("/thank-you"); // Form filled, wait for approval
+      else navigate("/user/dashboard");                  // Approved user
     } catch (err) {
       console.error("Error checking form status:", err);
-      alert("Unable to check status right now. Try again later.");
+      setError("Unable to verify form status. Try again later.");
     }
   }, [navigate]);
 
-  // Auto-login redirect if token exists
-  /*useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
- if (window.location.pathname === "/login") return;
-
-  if (token) {
-    if (role === "admin") navigate("/admin/dashboard");
-    else checkFormStatus();
-    }
-  }, [navigate, checkFormStatus]);*/
-
-  // Removed the socket notification listener completely
-
+  // Handle login submit
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const res = await API.post("/auth/login", { email, password });
       const { token, role, user } = res.data || {};
 
-      if (!token || !user)
-        return setError("Login failed: invalid server response");
+      if (!token || !user) {
+        setError("Invalid credentials");
+        setLoading(false);
+        return;
+      }
 
       const username = user.name || user.full_name_en || "User";
 
+      // Save token and user info first
       localStorage.setItem("token", token);
       localStorage.setItem("role", role || "user");
       localStorage.setItem("username", username);
-      localStorage.setItem("hasSubmittedForm", user.hasSubmittedForm || 0);
-      localStorage.setItem("form_completed", user.form_completed || 0);
-      localStorage.setItem("isApproved", user.isApproved || 0);
+      localStorage.setItem("hasSubmittedForm", user.hasSubmittedForm ? 1 : 0);
+      localStorage.setItem("form_completed", user.form_completed ? 1 : 0);
+      localStorage.setItem("isApproved", user.isApproved ? 1 : 0);
 
       setNotification(`💍 ${username} logged in successfully!`);
       setTimeout(() => setNotification(""), 2500);
 
-      setTimeout(() => {
-        if (role === "admin") navigate("/admin/dashboard");
-        else checkFormStatus();
-      }, 800);
+      // Navigate based on role and form status
+      if (role === "admin") navigate("/admin/dashboard");
+      else await checkFormStatus();
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -125,9 +117,10 @@ const Login = () => {
 
           <button
             type="submit"
+            disabled={loading}
             className="bg-orange-400 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition duration-300"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
@@ -135,7 +128,7 @@ const Login = () => {
           Don’t have an account?{" "}
           <span
             onClick={() => navigate("/register")}
-            className="text-orange-500 cursor-pointer font-semibold"
+            className="text-orange-500 cursor-pointer font-semibold hover:underline"
           >
             Sign Up
           </span>

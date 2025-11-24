@@ -87,9 +87,9 @@ const AdminForms = ({ onViewUser }) => {
 
                   <td className="py-3 px-4 border-b">{form.user_email || "N/A"}</td>
                   {/* <-- Make sure the key matches backend: `form.gender` */}
-                  <td className="py-3 px-4 border-b capitalize">{form.gender || "N/A"}</td>
-
-                  <td className="py-3 px-4 border-b text-center">
+                  <td className="py-3 px-4 border-b capitalize">
+                   {form.gender || form.user_gender || "N/A"}</td>
+                   <td className="py-3 px-4 border-b text-center">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         form.form_status === "Pending"

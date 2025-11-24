@@ -4,9 +4,15 @@ import API from "../api/axios";
 import { Eye } from "lucide-react";
 
 const fetchPendingConnections = async () => {
-  const { data } = await API.get("/admin/connections/pending");
+  const token = localStorage.getItem("token");
+
+  const { data } = await API.get("/admin/connections/pending", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
   return data || [];
 };
+
 
 const approveConnection = async (id) => {
   const { data } = await API.put(`/admin/connections/approve/${id}`);
@@ -29,7 +35,7 @@ const PendingConnections = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["adminConnections"],
+    queryKey: ["admin_pending_connections"],
     queryFn: fetchPendingConnections,
     staleTime: 5000,
   });
