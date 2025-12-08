@@ -17,7 +17,7 @@ const ProtectedUserDashboard = ({ children }) => {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
-        const res = await API.get("/user/form/status", {
+        const res = await API.get("/user/forms/status", {
           headers: { Authorization: `Bearer ${token}` },
         });
 

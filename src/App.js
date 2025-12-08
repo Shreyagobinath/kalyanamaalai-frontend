@@ -67,13 +67,14 @@ function App() {
 
       {/* User Dashboard with approval logic */}
       <Route
-        path="/user/dashboard"
-        element={
-          <ProtectedUserDashboard>
-            <UserDashboard />
-          </ProtectedUserDashboard>
-        }
-      />
+  path="/user/dashboard"
+  element={
+    <ProtectedUserDashboard>
+      <UserDashboard />
+    </ProtectedUserDashboard>
+  }
+/>
+
 
       {/* User Form */}
       <Route
